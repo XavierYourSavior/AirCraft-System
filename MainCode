@@ -1,0 +1,489 @@
+
+local bg = script.Parent.Parent.Engine.SetSpeed.BodyGyro
+local bv  = script.Parent.Parent.Engine.SetSpeed.BodyVelocity
+
+player = script.Parent.Parent.Name
+local vacant = true
+local Events = script.Parent                        
+local FlaresOn = false
+shootCoolDown = false
+
+--[[
+	- Body Gyro:
+	  X = Up and Down
+	  Y = Yaw
+	  Z = Roll
+--]]
+------------------------------------------------------------------------------------------------------------------
+local baseSpeed = script.Parent.Parent.Seat.VehicleSeat.BaseSpeed
+local MaxSpeed = 200
+local StallSpeed = 50
+local RollSpeed = 10
+local PitchSpeed = 17
+local YawSpeed = 10
+local StartUpTime = 5
+local Acceleration = 15
+local Airborne = false
+Running = false
+StartingUp = false                                                                                                      --These are settings for the aircraft
+
+------------------------------------------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------------------------------------------
+local addon = Instance.new("ObjectValue")
+
+------------------------------------------------------------------------------------------------------------------
+
+bv.maxForce = Vector3.new(0,0,0)
+bg.maxTorque = Vector3.new(0,0,0)
+bg.cframe = script.Parent.Parent.Engine.SetSpeed.CFrame
+------------------------------------------------------------------------------------------------------------------
+local direction = nil
+
+
+------------------------------------------------------------------------------------------------------------------
+function FlyIt()
+	print("got Y is on")
+	direction = bg.CFrame.LookVector      -- this sets the direction of the force applied to go towards the front of the aircraft 
+	bv.Velocity = direction*baseSpeed.Value
+	if baseSpeed.Value > StallSpeed then     -- makes sure the speed isnt stalling
+		bv.maxForce = Vector3.new(math.huge, math.huge, math.huge)
+		bg.maxTorque = Vector3.new(math.huge, math.huge, math.huge)     -- setting max torque and force to max to move the aircraft
+		Airborne = true
+	elseif baseSpeed.Value < StallSpeed and baseSpeed.Value >= (StallSpeed/(StallSpeed*0.5)) and Airborne == true then                
+		bg.maxTorque = Vector3.new(math.huge, math.huge, math.huge) 
+		bv.maxForce = Vector3.new(math.huge, math.huge, math.huge)
+		bv.Velocity = Vector3.new(direction.X,direction.Y-0.2/((baseSpeed.Value)/StallSpeed)*1.4,direction.Z)*baseSpeed.Value
+	elseif baseSpeed.Value < (StallSpeed/(StallSpeed*0.5)) or baseSpeed.Value <= 0 then
+		Airborne = false
+		bv.maxForce = Vector3.new(math.huge, 0, math.huge)
+		bg.maxTorque = Vector3.new(0, math.huge, 0)
+		print("finished startup part 1")
+	end
+end
+------------------------------------------------------------------------------------------------------------------
+-- ENGINE START/MOVEMENT
+
+local Surfaces = script.Parent.Parent.HeadsUpDisplay
+Events.Takeoff.OnServerEvent:connect(function(client, event, data)
+	print(event)
+	FlyIt()             -- The start up function that starts up the aircraft, the other elseifs are determined by the event sent from the client 
+	if event == "On" and   StartingUp == false then
+	print("startup is false")
+		StartingUp = true
+		
+		local text3 = "Welcome"
+		local plr = game.Players.LocalPlayer
+		
+		for i = 1,0,-.1 do
+			Surfaces.StartUpText.SurfaceGui.TextLabel.TextTransparency  = i
+			wait()
+		end  -- loops for the cockpit interfaces
+		
+
+
+
+		
+		wait(1)
+		
+		Typing = Surfaces.StartUpText.Typing
+		Typing:Play()
+		local text1 = "Cockpit Start up..."
+
+		for i = 1, #text1 do
+			Surfaces.StartUpText.SurfaceGui.TextLabel.Text = string.sub(text1, 1, i)
+			wait(0.04) --This is the speed of the text
+		end
+		
+		Typing:Stop()
+		wait(2)
+
+		
+		
+	
+		
+	    
+
+		
+		for i = 0,3,.1 do
+			wait()
+			Surfaces.Sys.SurfaceGui.Brightness = i
+		
+			
+
+		end
+		
+		for i = 0,3,.1 do
+			Surfaces.HUD.SurfaceGui.Brightness = i
+			
+		end
+		
+		for i = 0,3,.1 do
+			Surfaces.SpeedDisplay.SurfaceGui.Brightness = i
+
+		end
+
+		
+		
+
+
+		for i = 0,3,.1 do
+			wait()
+			Surfaces.Screen1.SurfaceGui.Brightness = i
+			--Surfaces.Screen1.SurfaceGui.Brightness = i
+			Surfaces.MissleFollowing.SurfaceGui.Brightness = i
+			Surfaces.LockOnWarning.SurfaceGui.Brightness = i
+
+			Surfaces.Screen2.SurfaceGui.Brightness = i
+			Surfaces.HUD.SurfaceGui.Brightness = i
+			Surfaces.SpeedDisplay.SurfaceGui.Brightness = i
+
+		end
+		Time = 3
+		
+		wait(1)
+		
+		for i = 0,3,.1 do
+			wait()
+
+			script.Parent.Parent.Lights.CockPitLight.PointLight.Brightness = i
+            
+
+
+
+
+
+
+		end
+		wait(1)
+		
+		
+		
+		for i = 1,.3,-.1 do
+			wait()
+		
+			Surfaces.MissleFollowing.Transparency = i
+		    
+
+		end
+		
+		for i = 1,.3,-.1 do
+			wait()
+
+			Surfaces.LockOnWarning.Transparency = i
+
+
+		end
+		
+		
+
+
+	
+
+	
+
+
+		wait(.5)
+	
+		
+
+
+		
+
+		Typing:Play()
+
+		
+		local text4 = "Engine Start Up..."
+
+		for i = 1, #text4 do  -- this allows the text to have a type writer effect.
+			Surfaces.StartUpText.SurfaceGui.TextLabel.Text = string.sub(text4, 1, i)
+			wait(0.04) --This is the speed of the text
+		end
+		
+		
+		
+		Typing:Stop()
+		script.Parent.Parent.Engine.SetSpeed.Engine:Play()
+
+		script.Parent.Parent.Engine.SetSpeed.Engine.Volume = 0
+	
+		for i = 0,2,.1 do
+		wait(.1)
+			script.Parent.Parent.Engine.SetSpeed.Engine.Volume = i
+		end
+		wait(Time)
+
+		local text4 = "Finalized"
+		Typing:Play()
+
+		for i = 1, #text4 do
+			Surfaces.StartUpText.SurfaceGui.TextLabel.Text = string.sub(text4, 1, i)
+			wait(0.04) --This is the speed of the text
+		end
+		
+		Typing:Stop()
+		wait(Time)
+
+		script.Parent.LockOnWarning.Disabled = false
+
+		script.Parent.MissleWarning.Disabled = false
+
+
+
+		for i = 0,1,.1 do
+			Surfaces.StartUpText.SurfaceGui.TextLabel.TextTransparency  = i
+			wait()
+		end
+		
+
+
+
+
+		
+		StartingUp = false
+		Running = true
+		bg.cframe = script.Parent.Parent.Engine.SetSpeed.CFrame
+		bv.maxForce = Vector3.new(math.huge, 0, math.huge)
+		bg.maxTorque = Vector3.new(0, math.huge, 0)
+		
+		
+		print("ship is on")
+		-----------------------------------------------------------------------
+	elseif event == "Speed" and Running == true and    baseSpeed.Value < MaxSpeed then		
+		print("we have the speed event")
+		baseSpeed.Value = baseSpeed.Value + Acceleration / 10
+		print("increasing")
+		
+	elseif event == "ShootLaser" and Running == true then                    -- This creates the part, inserts a body mover to make it go foward like a bullet, adds trails for a tracer effect,
+		shootCoolDown = true
+		local HugeVector = Vector3.new(math.huge,math.huge,math.huge)
+
+		local Part = Instance.new("Part")
+		Part.BrickColor = BrickColor.new("Toothpaste")
+		Part.Name = "Bullet"
+		Part.CanCollide = false
+		Part.FormFactor = "Custom"
+		Part.Material = "Neon"
+		Part.Size = Vector3.new(0.2,0.2,1)
+		Part.BottomSurface = "Smooth"
+		Part.TopSurface = "Smooth"
+		Part.Parent = game.Workspace
+		Part.CFrame = CFrame.new(script.Parent.Parent.Weapons.LaserGun1.Position)
+		local Attachment1 = Instance.new('Attachment')
+		Attachment1.Parent = Part
+		Attachment1.Position = Vector3.new(-0.2,0,0)
+		local Attachment2 = Instance.new('Attachment')
+		Attachment2.Position = Vector3.new(0.2,0,0)
+		Attachment2.Parent = Part
+		local Tracer = Instance.new('Trail')
+		Tracer.Parent = Part
+		Tracer.Attachment0 = Attachment1
+		Tracer.Attachment1 = Attachment2
+		Tracer.Enabled = true
+		Tracer.Lifetime = NumberRange.new(3)
+		Tracer.Transparency = NumberSequence.new(0)
+		Tracer.LightEmission = 1
+		Tracer.Color = ColorSequence.new(Color3.fromRGB(85, 255, 255))
+		local BV = Instance.new("BodyVelocity")
+		BV.Parent = Part
+		BV.maxForce = HugeVector
+		BV.velocity = script.Parent.Parent.Weapons.LaserGun1.CFrame.lookVector * 1250 + Vector3.new(0,0.15,0)
+
+
+		Part.Touched:Connect(function(hit)
+			print("gun hit")
+			if hit.Parent.Name == "Sam" then  -- This is so if the Sam is hit it damages
+				print("gun hit damage")
+				hit.Parent.HP.Value =  hit.Parent.HP.Value - 1
+			end
+			
+
+		end)
+		
+		local HugeVector = Vector3.new(math.huge,math.huge,math.huge)
+
+		local Part2 = Instance.new("Part")
+		Part2.BrickColor = BrickColor.new("Toothpaste")
+		Part2.Name = "Bullet"
+		Part2.CanCollide = false
+		Part2.FormFactor = "Custom"
+		Part2.Material = "Neon"
+		Part2.Size = Vector3.new(0.2,0.2,1)
+		Part2.BottomSurface = "Smooth"
+		Part2.TopSurface = "Smooth"
+		Part2.Parent = game.Workspace
+		Part2.CFrame = CFrame.new(script.Parent.Parent.Weapons.LaserGun2.Position)
+		local Attachment1 = Instance.new('Attachment')
+		Attachment1.Parent = Part2
+		Attachment1.Position = Vector3.new(-0.2,0,0)
+		local Attachment2 = Instance.new('Attachment')
+		Attachment2.Position = Vector3.new(0.2,0,0)
+		Attachment2.Parent = Part2
+		local Tracer = Instance.new('Trail')
+		Tracer.Parent = Part2
+		Tracer.Attachment0 = Attachment1
+		Tracer.Attachment1 = Attachment2
+		Tracer.Enabled = true
+		Tracer.Lifetime = NumberRange.new(3)
+		Tracer.Transparency = NumberSequence.new(0)
+		Tracer.LightEmission = 1
+		Tracer.Color = ColorSequence.new(Color3.fromRGB(85, 255, 255))
+		local BV = Instance.new("BodyVelocity")
+		BV.Parent = Part2
+		BV.maxForce = HugeVector
+		BV.velocity = script.Parent.Parent.Weapons.LaserGun2.CFrame.lookVector * 1250 + Vector3.new(0,0.15,0)
+
+
+		Part2.Touched:Connect(function(hit)
+			print("gun hit")
+			if hit.Parent.Name == "Sam" then
+				print("gun hit damage")
+				hit.Parent.HP.Value =  hit.Parent.HP.Value - 1
+			end
+
+
+		end)
+		
+		
+		local HugeVector = Vector3.new(math.huge,math.huge,math.huge)
+
+		local Part3 = Instance.new("Part")
+		Part3.BrickColor = BrickColor.new("Toothpaste")
+		Part3.Name = "Bullet"
+		Part3.CanCollide = false
+		Part3.FormFactor = "Custom"
+		Part3.Material = "Neon"
+		Part3.Size = Vector3.new(0.2,0.2,1)
+		Part3.BottomSurface = "Smooth"
+		Part3.TopSurface = "Smooth"
+		Part3.Parent = game.Workspace
+		Part3.CFrame = CFrame.new(script.Parent.Parent.Weapons.LaserGun3.Position)
+		local Attachment1 = Instance.new('Attachment')
+		Attachment1.Parent = Part3
+		Attachment1.Position = Vector3.new(-0.2,0,0)
+		local Attachment2 = Instance.new('Attachment')
+		Attachment2.Position = Vector3.new(0.2,0,0)
+		Attachment2.Parent = Part3
+		local Tracer = Instance.new('Trail')
+		Tracer.Parent = Part3
+		Tracer.Attachment0 = Attachment1
+		Tracer.Attachment1 = Attachment2
+		Tracer.Enabled = true
+		Tracer.Lifetime = NumberRange.new(3)
+		Tracer.Transparency = NumberSequence.new(0)
+		Tracer.LightEmission = 1
+		Tracer.Color = ColorSequence.new(Color3.fromRGB(85, 255, 255))
+		local BV = Instance.new("BodyVelocity")
+		BV.Parent = Part3
+		BV.maxForce = HugeVector
+		BV.velocity = script.Parent.Parent.Weapons.LaserGun3.CFrame.lookVector * 1250 + Vector3.new(0,0.15,0)
+
+
+		Part3.Touched:Connect(function(hit)
+			print("gun hit")
+			if hit.Parent.Name == "Sam" then
+				print("gun hit damage")
+				hit.Parent.HP.Value =  hit.Parent.HP.Value - 1
+			end
+
+
+		end)
+		
+		
+		
+
+		
+	elseif event == "Flare" and Running == true	 and FlaresOn == false then  -- This is the flare function which creates 6 parts through a for loop and adds a Body velocity with random math so create a natrual looking flare
+		FlaresOn = true
+		script.Parent.Parent.CounterMeasure.FlareAmount.Value = 	script.Parent.Parent.CounterMeasure.FlareAmount.Value - 3
+		for i =1,6,1 do
+			wait()
+			local flare = game.ReplicatedStorage.Flare.Flare:Clone()
+			flare.Name = client.Name.."Flare"
+			flare.CFrame = CFrame.new(script.Parent.Parent.CounterMeasure.FlarePod.Position)
+			flare.Anchored = false
+			local bv = Instance.new("BodyVelocity", flare)
+			flare.Parent = workspace
+			bv.MaxForce = Vector3.new(400000000,400000000,400000000)
+			bv.P = 3000
+			bv.Velocity = Vector3.new(math.random(-100,100),math.random(-100,100),math.random(-100,100))
+		wait()
+			bv.MaxForce = Vector3.new(0,0,0)
+			bv.P = 0
+			bv.Velocity = Vector3.new(0,0,0)
+			--wait()
+			
+			random_chance = math.random(1,100) -- this chooses a random number between 1,100, alowing you to have percentage chances
+			chance1 = 30 -- 3o% Chance
+			
+			if random_chance <= chance1 then
+				
+				for i,v in pairs(game.Workspace.Missles:GetChildren())do
+					if v.Name == client.Name.."Missle" and v.Defeated.Value == false then
+						v.Defeated.Value = true
+						v.RocketPropulsion.Target = game.Workspace:FindFirstChild(client.Name.."Flare")
+						break
+					end
+
+				end
+				
+			end
+			
+		end
+		
+		
+		wait(1)
+		for i,v in pairs(game.Workspace:GetChildren())do
+			if v.Name == client.Name.."Flare" then
+				v.Name = "ded"
+			end
+		end
+
+		
+		FlaresOn = false
+	elseif event == "Bomb" and Running == true then -- This is a bomb cloned from replicated storage which has a script which when enabled will deonate and damage any sam near by.
+		script.Parent.Parent.Weapons.BombAmmo.Value = 	script.Parent.Parent.Weapons.BombAmmo.Value - 1
+		local c = game.ReplicatedStorage.Bomb.Bomb:Clone()
+		c.Parent = game.Workspace
+		c.CFrame = CFrame.new(script.Parent.Parent.Weapons.Bomb.Position)
+		c.Script.Disabled = false
+		
+		
+		-----------------------------------------------------------------------
+	elseif event == "Slow" and Running == true  and baseSpeed.Value > 0 then	 -- These are the other control functions which adjust the yawn and roll of the aircraft by editing the body gyro's cframe
+		baseSpeed.Value = baseSpeed.Value - Acceleration / 10
+		-----------------------------------------------------------------------
+	elseif event == "RollLeft"  and baseSpeed.Value > (StallSpeed - 50) and Running == true then
+		bg.CFrame = bg.CFrame * CFrame.Angles(0, 0, RollSpeed / 100)
+		-----------------------------------------------------------------------
+	elseif event == "RollRight"  and baseSpeed.Value > (StallSpeed - 50) and Running == true then
+		bg.CFrame = bg.CFrame * CFrame.Angles(0, 0, -RollSpeed / 100)
+		-----------------------------------------------------------------------
+	elseif event == "PitchUp"  and baseSpeed.Value > (StallSpeed - 50) and Running == true then
+		bg.CFrame = bg.CFrame * CFrame.Angles(PitchSpeed / 666, 0, 0)
+		-----------------------------------------------------------------------
+	elseif event == "PitchDown"  and baseSpeed.Value > (StallSpeed - 50) and Running == true then
+		bg.CFrame = bg.CFrame * CFrame.Angles(-PitchSpeed / 666, 0, 0)
+		-----------------------------------------------------------------------
+	elseif event == "Left" and   Running == true then
+		bg.CFrame = bg.CFrame * CFrame.Angles(0, YawSpeed / 1000, 0)
+		-----------------------------------------------------------------------
+	elseif event == "Right"  and Running == true then
+		bg.CFrame = bg.CFrame * CFrame.Angles(0, -YawSpeed / 1000, 0)
+		
+	elseif event == "Exit"  and Running == true then
+		Running = false
+		script.Parent.Parent.VehicleSeat.Disabled = true
+		game.Players[client.Name]:WaitForChild("ControllingShip").Value = false
+		-----------------------------------------------------------------------
+	elseif event == "Off" and client == player then
+		
+		baseSpeed.Value = 0
+		StartingUp = false
+		Running = false
+		bv.maxForce = Vector3.new(0,0,0)
+		bg.maxTorque = Vector3.new(0,0,0)
+	end
+end)
+------------------------------------------------------------------------------------------------------------------
